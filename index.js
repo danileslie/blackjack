@@ -1,9 +1,11 @@
 let player1Area = document.querySelector('.player1Cards');
 let player2Area = document.querySelector('.player2Cards');
 
-document.querySelector('.drawCards').addEventListener('click', drawFour);
+document.querySelector('.drawCards').addEventListener('click', obtainDeck);
+
 document.querySelector('.hit').addEventListener('click', hit);
 document.querySelector('.stay').addEventListener('click', stay);
+document.querySelector('.refresh').addEventListener('click', refresh);
 
 let deckId = ''
 let hitAvailable = true;
@@ -17,25 +19,28 @@ let cardCode;
 
 //obtain deck
 
-fetch(`https://www.deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1`)
-    .then(res => res.json()) // parse response as JSON
-    .then(data => {
-        console.log(data);
-        deckId = data.deck_id
-    })
-    .catch(err => {
-        console.log(`error ${err}`)
-    });
+function obtainDeck() {
+    fetch(`https://www.deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1`)
+        .then(res => res.json()) // parse response as JSON
+        .then(data => {
+            console.log(data);
+            deckId = data.deck_id;
+            drawFour();
+            document.querySelector('.drawCards').disabled = true;
+        })
+        .catch(err => {
+            console.log(`error ${err}`)
+        });
+}
+
 
 //draw 4 cards from deck
 function drawFour() {
     const url = `https://www.deckofcardsapi.com/api/deck/${deckId}/draw/?count=4`;
-     fetch(url)
-     .then(res => res.json()) // parse response as JSON
+    fetch(url)
+        .then(res => res.json()) // parse response as JSON
         .then(data => {
-            console.log(data);
-            
-            // assign 2cards  to player and 2 to dealer
+            // assign 2 cards  to player and 2 to dealer
             let card1 = document.querySelector('#card1');
             card1.src = data.cards[0].image;
             let card2 = document.querySelector('#card2');
@@ -44,7 +49,7 @@ function drawFour() {
             let card3 = document.querySelector('#card3');
             card3.src = `https://www.deckofcardsapi.com/static/img/back.png`;
             let card3Source = data.cards[2].code;
-           
+
             let card4 = document.querySelector('#card4');
             card4.src = data.cards[3].image;
             //add values of cards together
@@ -57,13 +62,13 @@ function drawFour() {
             player2AceCount += aceCard(data.cards[2].value);
 
             dealerDraw();
-            console.log(player1Value);
             cardCode = card3Source;
-            
+
         })
         .catch(err => {
             console.log(`error ${err}`)
         });
+
 }
 
 //assign values to royal cards
@@ -107,8 +112,6 @@ function dealerDraw() {
                 player2AceCount += aceCard(data.cards[0].value);
                 player2Sum += newCardValue;
             }
-            console.log(player2Sum);
-            console.log(player2AceCount);
         })
         .catch(err => {
             console.log(`error ${err}`)
@@ -138,9 +141,6 @@ function hit() {
                     hitAvailable = false;
                 }
             }
-            console.log(player1Sum);
-            console.log(player1AceCount);
-
         })
         .catch(err => {
             console.log(`error ${err}`)
@@ -160,23 +160,27 @@ function lowerAce(playerSum, playerAceCount) {
 //END GAME SECTION
 
 //when stay is hit, reveal card and end game
-function stay(){
+function stay() {
     player1Sum = lowerAce(player1Sum, player1AceCount);
     // player2Sum = lowerAce(player2Sum, player2AceCount); 
-    
+
     hitAvailable = false;
     card3.src = `https://deckofcardsapi.com/static/img/${cardCode}.png`;
 
     let results = '';
-    if (player1Sum > 21){
+    if (player1Sum > 21) {
         console.log('Player 1 loses!');
-    } else if (player2Sum > 21 && player1Sum <= 21){
+    } else if (player2Sum > 21 && player1Sum <= 21) {
         console.log('Player 1 wins!');
-    } else if (player1Sum == player2Sum){
+    } else if (player1Sum == player2Sum) {
         console.log('Tie!');
-    } else if (player1Sum > player2Sum){
+    } else if (player1Sum > player2Sum) {
         console.log('Player 1 wins!');
-    } else if (player1Sum < player2Sum){
+    } else if (player1Sum < player2Sum) {
         console.log('Player 1 loses!');
     }
+}
+
+function refresh(){
+    window.location.reload();
 }
